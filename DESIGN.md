@@ -10,27 +10,29 @@ groups, attendance), none of the same code.
 
 ## The one rule
 
-**No Method Raid Tools source enters this addon. Not a file, not a function, not a
+**No other addon source enters this addon. Not a file, not a function, not a
 copy-pasted block.** Ideas, API knowledge and lessons are fair game; text is not.
 
-Why it matters: MRT is All Rights Reserved. The stable build is a personal modified copy
-and cannot be shared with anyone. This one is ours, MIT licensed, and can be published,
-shown to guildmates, or put on GitHub without a licensing question. That freedom only
-survives while the rule does.
+Why it matters: most WoW addons are All Rights Reserved, so a build that borrows from one
+cannot be shared with anyone. This one is entirely ours, MIT licensed, and can be
+published, shown to guildmates, or put on GitHub without a licensing question. That
+freedom survives only while the rule does.
 
-If you ever need to check how MRT solved something, read it, close it, and write your own
-from what you understood. Do not have it open in the other window while typing.
+If you ever need to see how another addon solved something, read it, close it, and write
+your own from what you understood. Do not have it open in the other window while typing.
 
 ## Coexistence
 
 Alpha shares nothing with stable, so both can run at once:
 
-| | Stable | Alpha |
+Alpha shares no folder, global, saved variable or slash command with the previous build,
+so both can be enabled at once.
+
+| | Previous build | Alpha |
 |---|---|---|
 | Folder | `RaidOps` | `RaidOps_Alpha` |
-| Global | `GMRT` | `RaidOpsAlpha` |
-| Saved variable | `VMRT` | `RaidOpsAlphaDB` |
 | Slash | `/ro` | `/roa` |
+| Saved variable | its own | `RaidOpsAlphaDB` |
 | Minimap accent | amber | cyan |
 
 Running them side by side is the point: compare behaviour without giving anything up.

@@ -1,7 +1,7 @@
 --[[
 	RaidOps Alpha - Core
 
-	Original work. No Method Raid Tools source appears in this addon; see DESIGN.md
+	Original work. No other addon source appears in this addon; see DESIGN.md
 	for why that rule exists and how to keep it.
 
 	Core owns four things and nothing else:
