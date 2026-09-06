@@ -91,7 +91,12 @@ local function ensureRegistered(event)
 	dispatcher:RegisterEvent(event)
 end
 
+local coreEvents = {}
+
 dispatcher:SetScript("OnEvent", function(_, event, ...)
+	local core = coreEvents[event]
+	if core then core(...) end
+
 	local list = registered[event]
 	if not list then return end
 	for i = 1, #list do
@@ -120,8 +125,6 @@ end
 
 dispatcher:RegisterEvent("ADDON_LOADED")
 dispatcher:RegisterEvent("PLAYER_LOGIN")
-
-local coreEvents = {}
 
 function coreEvents.ADDON_LOADED(addonName)
 	if addonName ~= ADDON then return end
@@ -156,11 +159,6 @@ function coreEvents.PLAYER_LOGIN()
 		end
 	end
 end
-
-dispatcher:HookScript("OnEvent", function(_, event, ...)
-	local fn = coreEvents[event]
-	if fn then fn(...) end
-end)
 
 RO.dispatcher = dispatcher
 
