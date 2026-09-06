@@ -1,0 +1,14 @@
+## Interface: 120100
+## Title: |cff30c8ffRaidOps Alpha|r
+## Author: Gray, with Claude
+## Notes: Clean-room rewrite of RaidOps. Original code only, no Method Raid Tools source.
+## SavedVariables: RaidOpsAlphaDB
+## Version: 0.1.0-alpha
+## IconTexture: Interface\AddOns\RaidOps_Alpha\media\MiniMap.tga
+## X-License: MIT
+Core.lua
+UI.lua
+Config.lua
+Modules\Invites.lua
+Modules\Groups.lua
+Modules\Attendance.lua
