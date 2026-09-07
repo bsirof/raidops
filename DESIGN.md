@@ -79,7 +79,8 @@ These cost real debugging on the stable build. Do not rediscover them.
    `OnEnable` or an event handler is only a printed line - report it through
    `RO.onModuleError` or the harness will call a broken module clean.
 5. **Test under Lua 5.1, not a newer one.** WoW runs 5.1 and the differences bite: loop
-   variables became const in 5.4. Use `../.tools/bin/lua5.1`.
+   variables became const in 5.4, so correct code fails under a current Lua. Any real 5.1
+   works; this workspace keeps one at `../.tools/bin/lua5.1`.
 6. **Never write into the AddOns folder while WoW is running.**
 
 ## Where the real work is
@@ -97,7 +98,7 @@ Roughly in order of difficulty:
 ## Testing
 
 ```
-../.tools/bin/lua5.1 tools/loadtest.lua .   # headless load and init
+lua5.1 tools/loadtest.lua .                 # headless load and init, any real 5.1
 ../raidops-build.sh check-alpha             # same, through the build script
 ../raidops-build.sh deploy-alpha            # copy to AddOns/RaidOps_Alpha
 ```
