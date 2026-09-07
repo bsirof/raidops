@@ -93,6 +93,22 @@ end
 
 local coreEvents = {}
 
+--[[
+	One place for module failures. Core pcalls module code on purpose so that one broken
+	module cannot take the addon down - see DESIGN.md. The cost is that a module error is
+	only ever a printed line, invisible to anything watching for a raised error, which is
+	how tools/loadtest.lua could report "loaded clean" for a module whose OnEnable threw.
+
+	RO.onModuleError is the seam. The harness sets it and counts what arrives. In game it
+	is nil and this function just prints, exactly as before.
+]]
+local function moduleError(context, err)
+	RO:Print("|cffff4040error|r " .. context .. ": " .. tostring(err))
+	if RO.onModuleError then
+		pcall(RO.onModuleError, context, err)
+	end
+end
+
 dispatcher:SetScript("OnEvent", function(_, event, ...)
 	local core = coreEvents[event]
 	if core then core(...) end
@@ -106,7 +122,7 @@ dispatcher:SetScript("OnEvent", function(_, event, ...)
 			if handler then
 				local ok, err = pcall(handler, module, ...)
 				if not ok then
-					RO:Print("|cffff4040error|r in " .. module.name .. " on " .. event .. ": " .. tostring(err))
+					moduleError("in " .. module.name .. " on " .. event, err)
 				end
 			end
 		end
@@ -144,7 +160,7 @@ function coreEvents.ADDON_LOADED(addonName)
 		wireModuleEvents(module)
 		if module.OnLoad then
 			local ok, err = pcall(module.OnLoad, module)
-			if not ok then RO:Print("|cffff4040error|r loading " .. module.name .. ": " .. tostring(err)) end
+			if not ok then moduleError("loading " .. module.name, err) end
 		end
 	end
 
@@ -155,7 +171,7 @@ function coreEvents.PLAYER_LOGIN()
 	for _, module in ipairs(RO.modules) do
 		if module.OnEnable then
 			local ok, err = pcall(module.OnEnable, module)
-			if not ok then RO:Print("|cffff4040error|r enabling " .. module.name .. ": " .. tostring(err)) end
+			if not ok then moduleError("enabling " .. module.name, err) end
 		end
 	end
 end

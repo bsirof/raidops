@@ -170,6 +170,24 @@ for i, item in ipairs(loadList) do
   if trackL and i == lastLocalizationIndex then installLProxy() end
 end
 
+--[[
+  Core pcalls every module handler on purpose, so one broken module cannot take the
+  addon down. That is correct in the game and blinding in a test: a module whose
+  OnEnable throws prints a line and the run still ends "loaded clean, no Lua errors".
+  Core exposes RO.onModuleError as the seam. Anything reported through it is a failure.
+]]
+local moduleErrors = {}
+do
+  local RO = rawget(addonTable, "RO")
+  if type(RO) == "table" then
+    RO.onModuleError = function(context, err)
+      moduleErrors[#moduleErrors + 1] = ("%s: %s"):format(tostring(context), tostring(err))
+    end
+  else
+    print("  WARN  addonTable.RO not found; module errors will not be visible")
+  end
+end
+
 print("")
 local function phase(label, fn)
   local ok, err = pcall(fn)
@@ -312,6 +330,14 @@ if os.getenv("RAIDOPS_LIST_APIS") then
   print("  APIs resolved through the universal stub:")
   for _, n in ipairs(names) do
     print(("    %-42s x%d"):format(n, stub.unknownGlobals[n]))
+  end
+end
+
+if #moduleErrors > 0 then
+  print("")
+  for _, e in ipairs(moduleErrors) do
+    print(("  FAIL  module error  %s"):format(e))
+    failures = failures + 1
   end
 end
 
