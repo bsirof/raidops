@@ -42,6 +42,10 @@ local function buildFrame()
 			if module.BuildOptions then
 				local ok, err = pcall(module.BuildOptions, module, pane)
 				if not ok then
+					-- The label alone is only visible to whoever opens this tab, which
+					-- means the load test called a broken pane clean. Report it through
+					-- Core's funnel as well, so the harness and the chat frame both see it.
+					RO.moduleError("building options for " .. module.name, err)
 					UI:Text(pane, "options failed to build: " .. tostring(err), 12, UI.colors.danger)
 						:SetPoint("TOPLEFT", 16, -16)
 				end
@@ -72,6 +76,10 @@ local function buildFrame()
 	credit:SetPoint("BOTTOMLEFT", 12, 8)
 
 	if #RO.modules > 0 then select(1) end
+
+	-- Only tab 1 is built here; the rest build on click. tools/loadtest.lua needs the
+	-- tabs to click through them, so the frame is reachable rather than a file local.
+	RO.configFrame = frame
 	return frame
 end
 

@@ -108,6 +108,7 @@ local function moduleError(context, err)
 		pcall(RO.onModuleError, context, err)
 	end
 end
+RO.moduleError = moduleError   -- Config.lua reports pane failures through the same funnel
 
 dispatcher:SetScript("OnEvent", function(_, event, ...)
 	local core = coreEvents[event]

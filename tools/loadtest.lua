@@ -177,8 +177,8 @@ end
   Core exposes RO.onModuleError as the seam. Anything reported through it is a failure.
 ]]
 local moduleErrors = {}
+local RO = rawget(addonTable, "RO")
 do
-  local RO = rawget(addonTable, "RO")
   if type(RO) == "table" then
     RO.onModuleError = function(context, err)
       moduleErrors[#moduleErrors + 1] = ("%s: %s"):format(tostring(context), tostring(err))
@@ -207,28 +207,50 @@ phase("pending C_Timer callbacks", function() stub.runTimers(4) end)
 phase("OnUpdate tick", function() stub.runOnUpdate(0.2) end)
 
 --[[
-  Building each module's options pane is where most module UI code actually runs.
-  core.lua wires it to the pane's OnShow, so firing that handler is the closest
-  headless equivalent of a user clicking through every tab.
+  Building each module's options pane is where most module UI code actually runs, so a
+  run that never opens the config window barely tests a module at all.
+
+  This block used to look for addonTable.Modules, which is the stable build's shape, not
+  this one. It was always nil here, so every pane phase silently skipped and the run
+  still reported success - a whole section of the harness that could not fail.
+
+  Config.lua builds a pane the first time its tab is opened, and opening the window only
+  builds tab 1. Clicking every tab is the closest headless equivalent of a user going
+  through the window. A pane that throws is caught by Config and reported through
+  RO.moduleError, so it lands in moduleErrors rather than failing a phase here.
 ]]
-local modules = rawget(addonTable, "Modules")
-if type(modules) == "table" then
-  for _, mod in ipairs(modules) do
-    local pane = mod.options
-    if pane then
-      local onShow = stub.scriptStore[pane] and stub.scriptStore[pane].OnShow
-      if onShow then
-        phase(("options pane: %s"):format(tostring(mod.name)), function() onShow(pane) end)
-      end
+if type(RO) == "table" and RO.OpenConfig then
+  phase("open config window", function() RO:OpenConfig() end)
+
+  local cfg = RO.configFrame
+  if cfg and cfg.tabs then
+    local function clickTab(i)
+      local tab = cfg.tabs[i]
+      local onClick = tab and stub.scriptStore[tab] and stub.scriptStore[tab].OnClick
+      if not onClick then return false end
+      onClick(tab)
+      return true
     end
+
+    for i, module in ipairs(RO.modules) do
+      local label = tostring(module.title or module.name)
+      phase(("options pane: %s"):format(label), function()
+        if not clickTab(i) then error("tab " .. i .. " is missing or has no OnClick") end
+      end)
+    end
+
+    -- A pane is built once and afterwards only shown again, which is a different path
+    -- through select() and breaks in its own ways.
+    phase("second pass over option panes", function()
+      for i in ipairs(RO.modules) do clickTab(i) end
+    end)
+  else
+    print("  FAIL  config window built no tabs")
+    failures = failures + 1
   end
-  phase("second pass over option panes", function()
-    for _, mod in ipairs(modules) do
-      local pane = mod.options
-      local onShow = pane and stub.scriptStore[pane] and stub.scriptStore[pane].OnShow
-      if onShow then onShow(pane) end
-    end
-  end)
+elseif type(RO) == "table" then
+  print("  FAIL  RO.OpenConfig is missing; option panes were not exercised")
+  failures = failures + 1
 end
 
 --[[
