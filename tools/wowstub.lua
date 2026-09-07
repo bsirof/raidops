@@ -331,7 +331,52 @@ function M.install()
   G.IsAltKeyDown = function() return false end
   G.IsModifierKeyDown = function() return false end
   G.date, G.time, G.difftime = os.date, os.time, os.difftime
-  G.bit = require("bit")
+  -- WoW ships LuaBitOp as `bit`, and LuaJIT has it built in, but stock Lua 5.1 does not.
+  -- The harness has to run under a real 5.1 (LuaJIT rejects escape sequences that 5.1
+  -- accepts), so fall back to a pure-Lua implementation. Results are normalised to
+  -- signed 32-bit, the way LuaBitOp returns them.
+  local okBit, bitlib = pcall(require, "bit")
+  if not okBit then
+    local function norm(x) return math.floor(x) % 4294967296 end
+    local function signed(x)
+      if x >= 2147483648 then return x - 4294967296 end
+      return x
+    end
+    local function fold(op)
+      return function(a, ...)
+        local r = norm(a)
+        for i = 1, select("#", ...) do
+          local x, y, acc, v = r, norm((select(i, ...))), 0, 1
+          for _ = 1, 32 do
+            local xb, yb = x % 2, y % 2
+            if op(xb, yb) == 1 then acc = acc + v end
+            x, y, v = (x - xb) / 2, (y - yb) / 2, v * 2
+          end
+          r = acc
+        end
+        return signed(r)
+      end
+    end
+    bitlib = {
+      band = fold(function(x, y) return (x == 1 and y == 1) and 1 or 0 end),
+      bor  = fold(function(x, y) return (x == 1 or  y == 1) and 1 or 0 end),
+      bxor = fold(function(x, y) return (x ~= y) and 1 or 0 end),
+      bnot = function(a) return signed(norm(-norm(a) - 1)) end,
+      lshift  = function(a, n) return signed(norm(norm(a) * 2 ^ (n % 32))) end,
+      rshift  = function(a, n) return signed(math.floor(norm(a) / 2 ^ (n % 32))) end,
+      arshift = function(a, n)
+        n = n % 32
+        local x = norm(a)
+        if x >= 2147483648 then
+          return signed(norm(math.floor(x / 2 ^ n) + (4294967296 - 2 ^ (32 - n))))
+        end
+        return signed(math.floor(x / 2 ^ n))
+      end,
+      tobit = function(a) return signed(norm(a)) end,
+      tohex = function(a) return ("%08x"):format(norm(a)) end,
+    }
+  end
+  G.bit = bitlib
 
   -- Client identity. Real values, so version branches take the retail path.
   G.GetLocale = function() return "enUS" end

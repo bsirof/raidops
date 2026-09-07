@@ -75,8 +75,12 @@ These cost real debugging on the stable build. Do not rediscover them.
    the stable build silently lost a library export after a rename.
 4. **A test that cannot fail proves nothing.** `tools/loadtest.lua` runs this addon
    headlessly under a WoW API stub. When adding a check, break the thing on purpose first
-   and confirm the check catches it.
-5. **Never write into the AddOns folder while WoW is running.**
+   and confirm the check catches it. Core `pcall`s module handlers, so an error in
+   `OnEnable` or an event handler is only a printed line - report it through
+   `RO.onModuleError` or the harness will call a broken module clean.
+5. **Test under Lua 5.1, not a newer one.** WoW runs 5.1 and the differences bite: loop
+   variables became const in 5.4. Use `../.tools/bin/lua5.1`.
+6. **Never write into the AddOns folder while WoW is running.**
 
 ## Where the real work is
 
@@ -93,7 +97,7 @@ Roughly in order of difficulty:
 ## Testing
 
 ```
-lua5.1 tools/loadtest.lua .                 # headless load and init
+../.tools/bin/lua5.1 tools/loadtest.lua .   # headless load and init
 ../raidops-build.sh check-alpha             # same, through the build script
 ../raidops-build.sh deploy-alpha            # copy to AddOns/RaidOps_Alpha
 ```
