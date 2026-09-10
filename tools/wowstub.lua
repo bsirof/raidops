@@ -399,9 +399,6 @@ function M.install()
   G.UnitIsGroupAssistant = function() return false end
   G.UnitGroupRolesAssigned = function() return "NONE" end
   G.UnitAffectingCombat = function() return false end
-  G.IsTestBuild = function() return false end
-  G.IsBetaBuild = function() return false end
-  G.IsPublicBuild = function() return true end
   G.InCombatLockdown = function() return false end
   G.IsInRaid = function() return false end
   G.IsInGroup = function() return false end
@@ -415,42 +412,14 @@ function M.install()
   G.GetGuildInfo = function() return "TestGuild", "Member", 1 end
   G.GetTime = function() return 1000.0 end
   G.GetServerTime = function() return os.time() end
-  G.GetFramerate = function() return 60 end
-  G.debugprofilestop = function() return 0 end
   G.IsEncounterInProgress = function() return false end
   G.GetInstanceInfo = function() return "None", "none", 0, "", 0, 0, false, 0, 0 end
-  G.GetSpecialization = function() return 1 end
-  G.GetSpecializationInfo = function() return 268, "Brewmaster", "", "", "TANK" end
-  G.GetNumSpecializations = function() return 3 end
-  G.GetSpellInfo = function() return nil end
-  G.GetItemInfo = function() return nil end
-  G.GetItemInfoInstant = function() return nil end
-  G.GetItemQualityColor = function() return 1, 1, 1, "|cffffffff" end
   G.GetAddOnMetadata = function() return nil end
   G.GetCursorPosition = function() return 0, 0 end
   G.GetScreenWidth = function() return 1920 end
   G.GetScreenHeight = function() return 1080 end
-  G.GetCVar = function() return "0" end
-  -- APIs whose return feeds a numeric for-loop or arithmetic must return numbers,
-  -- otherwise the universal stub surfaces as a bogus 'arithmetic on a table' error.
-  G.GuildControlGetNumRanks = function() return 0 end
-  G.GuildControlGetRankName = function() return "" end
-  G.GetNumClasses = function() return 13 end
-  G.GetNumRaidMembers = function() return 0 end
-  G.GetNumPartyMembers = function() return 0 end
-  G.GetNumFriends = function() return 0 end
-  G.BNGetNumFriends = function() return 0, 0, 0 end
-  G.GetNumSavedInstances = function() return 0 end
-  G.EJ_GetNumTiers = function() return 0 end
-  G.GetNumLootItems = function() return 0 end
-  G.GetContainerNumSlots = function() return 0 end
-  G.GetNumTalentTabs = function() return 0 end
-  G.GetMaxPlayerLevel = function() return 80 end
-  G.GetNumSpecGroups = function() return 1 end
-  G.UnitHealth = function() return 100 end
-  G.UnitHealthMax = function() return 100 end
-  G.GetLootMethod = function() return "personalloot" end
-  G.GetCVarBool = function() return false end
+  -- Anything whose return feeds a numeric for-loop or arithmetic must return a real
+  -- number here, or the universal stub surfaces as a bogus 'arithmetic on a table'.
 
   G.CreateFrame = M.CreateFrame
   G.UIParent = M.CreateFrame("Frame", "UIParent")
