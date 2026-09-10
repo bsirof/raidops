@@ -266,9 +266,9 @@ end
 
   The stub auto-creates any global the addon reads, which is what keeps deep UI code
   running, but it also means a global the addon FAILED to export looks fine. That is
-  exactly how a real bug slipped through: upstream exports _G.ELib only when the addon
-  folder is named "MRT", so renaming the folder silently killed it, and the harness
-  happily handed out a stub instead.
+  exactly how a real bug slipped through on the stable build: it exported a library
+  global only when the addon folder had its original name, so renaming the folder
+  silently killed the export, and the harness happily handed out a stub instead.
 
   So: every global the addon assigns through _G in its own source must NOT have been
   auto-stubbed during the run. If it was, the export did not happen on a path that

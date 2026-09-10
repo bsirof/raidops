@@ -44,12 +44,12 @@ which is the more useful half: **solve each problem the way the current client w
 solved.** Divergence by construction beats divergence by avoidance, and it is far easier
 to demonstrate.
 
-Method Raid Tools started as Exorsus Raid Tools around Legion and has been maintained
-forward ever since. That is a strength for it and an opening for us - a lot of what it
-hand-built, Blizzard now ships. Counted in files, across the other addons installed on
-this machine versus MRT's own 50 Lua files:
+The stable build's upstream is old - it predates most of the client surface described
+below and has been maintained forward across many expansions. That is a strength for it
+and an opening for us: a lot of what it hand-built, Blizzard now ships. Counted in files,
+across the other addons installed on this machine versus that build's own 50 Lua files:
 
-| Pattern | Other addons | MRT |
+| Pattern | Other addons | The stable build |
 |---|---|---|
 | `Settings.Register*` | 26 | 1 |
 | `ScrollUtil` / `CreateScrollBoxList*` | 22 | 0 |
@@ -58,8 +58,8 @@ this machine versus MRT's own 50 Lua files:
 | `EventRegistry` | 35 | 0 |
 | `SetResizeBounds` | 35 | 1 |
 
-MRT is not badly written, it is *early*. It predates most of that surface, and rewriting
-working code to chase an API is a bad trade for a live addon with users. We have no such
+That build is not badly written, it is *early*. It predates most of that surface, and
+rewriting working code to chase an API is a bad trade for a live addon with users. We have no such
 constraint: nothing here is written yet, the target is one interface version, and we
 should start where the client already is.
 
@@ -67,7 +67,7 @@ should start where the client already is.
 
 **Options belong in Blizzard's Settings panel, not in a window of ours.** This is the
 big one, and it points straight at `Config.lua`. A custom window with a tab sidebar is
-the same architectural decision MRT made, only smaller. The current answer hands each
+the same architectural decision the stable build made, only smaller. The current answer hands each
 pane to the client:
 
 ```lua
@@ -80,8 +80,8 @@ find this addon where they find every other one. `/roa` still opens it, through
 `Settings.OpenToCategory(category)`.
 
 **Lists are ScrollBox, not hand-scrolled frames.** Two of the three features are lists -
-a raid roster and an attendance history. MRT has zero uses of `ScrollUtil` and drives
-`SetVerticalScroll` by hand instead. The current pattern recycles rows, manages the
+a raid roster and an attendance history. The stable build has zero uses of `ScrollUtil`
+and drives `SetVerticalScroll` by hand instead. The current pattern recycles rows, manages the
 scrollbar, and is a fraction of the code:
 
 ```lua
@@ -95,7 +95,7 @@ ScrollUtil.InitScrollBoxListWithScrollBar(scrollBox, scrollBar, view)
 in WoW, so a 40-row roster rebuilt on every `GROUP_ROSTER_UPDATE` leaks frames unless
 they are reused.
 
-**Namespaced APIs, no compatibility shims.** MRT is full of
+**Namespaced APIs, no compatibility shims.** The stable build is full of
 `C_Item and C_Item.GetItemInfo or GetItemInfo`, because it supports clients back to
 Classic. This addon targets one interface version, so call `C_PartyInfo.InviteUnit`,
 `C_AddOns.GetAddOnMetadata` and `C_DateAndTime` directly. If the TOC ever grows a second
