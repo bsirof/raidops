@@ -1,7 +1,7 @@
 ## Interface: 120100
 ## Title: |cff30c8ffRaidOps Alpha|r
 ## Author: Gray, with Claude
-## Notes: Clean-room rewrite of RaidOps. Original code only, no other addon source.
+## Notes: Clean-room rewrite of RaidOps.
 ## SavedVariables: RaidOpsAlphaDB
 ## Version: 0.1.0-alpha
 ## IconTexture: Interface\AddOns\RaidOps_Alpha\media\MiniMap.tga
