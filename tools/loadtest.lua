@@ -94,8 +94,15 @@ local addonName = tocPath:match("([^/]+)%.toc$")
 stub.install()
 
 -- Saved variables start empty, exactly like a first-ever login.
+--
+-- Clearing the raw slot is not enough on its own: the stub's __index hands back a
+-- universal stub for any global it does not know, so the next read would quietly
+-- succeed and a file-scope database access would look fine. Registering the name in
+-- nilGlobals is what actually makes it read nil, which is the whole point - that is
+-- the bug class this harness exists to catch.
 for sv in tostring(meta.SavedVariables or ""):gmatch("[^,%s]+") do
   rawset(_G, sv, nil)
+  stub.nilGlobals[sv] = true
 end
 
 local addonTable = {}
@@ -116,9 +123,10 @@ print(("   interface %s, %d toc entries, %d lua files"):format(
 print("")
 
 --[[
-  Optional localization coverage. Modules cache "local L = ExRT.L" at file scope, so
-  the proxy has to be swapped in after the last localization file loads and before the
-  first module file, or nothing would see it.
+  Optional localization coverage. Modules cache "local L = ns.L" at file scope, where
+  ns is the addon table passed as the second vararg, so the proxy has to be swapped in
+  after the last localization file loads and before the first module file, or nothing
+  would see it.
 ]]
 local trackL = os.getenv("RAIDOPS_TRACK_L")
 local Lreads = {}

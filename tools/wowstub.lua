@@ -546,7 +546,7 @@ function M.install()
     compares a stub against a number. Saved variables are added by the harness.
   ]]
   for _, name in ipairs({
-    "LibStub", "VMRT", "VExRT", "GMRT", "GExRT",
+    "LibStub",
     "BackdropTemplateMixin", "WeakAurasSaved", "BigWigs", "DBM",
   }) do
     M.nilGlobals[name] = true
