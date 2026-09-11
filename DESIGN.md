@@ -5,8 +5,8 @@ at feature work instead of plumbing.
 
 ## What this is
 
-A clean-room rewrite of RaidOps. Same three jobs as the stable build (invites, raid
-groups, attendance), none of the same code.
+A rewrite of RaidOps. Same three jobs as the stable build - invites, raid groups,
+attendance - built from nothing.
 
 ## The one rule
 
@@ -39,10 +39,8 @@ Running them side by side is the point: compare behaviour without giving anythin
 
 ## Modern by default
 
-The one rule above says what this addon must not take. This says how it should differ,
-which is the more useful half: **solve each problem the way the current client wants it
-solved.** Divergence by construction beats divergence by avoidance, and it is far easier
-to demonstrate.
+**Solve each problem the way the current client wants it solved.** Not on principle -
+because the modern surface is smaller, faster, and less code to own.
 
 The stable build's upstream is old - it predates most of the client surface described
 below and has been maintained forward across many expansions. That is a strength for it

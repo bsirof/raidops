@@ -6,11 +6,8 @@ and attendance. Nothing else.
 **Status: scaffold.** The architecture is settled and it loads clean. No feature is
 implemented yet.
 
-## Original work
-
-This is a clean-room build. It contains no code from any other addon, and it exists
-because the author wanted something small enough to actually understand. MIT licensed;
-do what you like with it.
+Written from scratch, because the author wanted something small enough to actually
+understand. MIT licensed; do what you like with it.
 
 ## Design
 
