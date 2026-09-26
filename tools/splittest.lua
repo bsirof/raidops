@@ -396,6 +396,13 @@ check("apply puts the raid where the plan said", #wrong == 0, table.concat(wrong
 check("apply reports success", chatHas("raid matches the plan"), table.concat(chat, " | "))
 
 chat = {}
+stub.raid.lead = false
+local leadOk, leadWhy = Groups:Apply(planned)
+check("refuses to move people without lead or assist",
+  leadOk == nil and tostring(leadWhy):find("lead or assist"), tostring(leadWhy))
+stub.raid.lead = true
+
+chat = {}
 rawset(_G, "InCombatLockdown", function() return true end)
 local combatOk, combatWhy = Groups:Apply(planned)
 check("refuses to move people in combat", combatOk == nil and tostring(combatWhy):find("combat"), tostring(combatWhy))

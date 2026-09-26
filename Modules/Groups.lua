@@ -301,6 +301,12 @@ end
 function module:Apply(plan)
 	if InCombatLockdown() then return nil, "cannot change subgroups in combat" end
 	if not IsInRaid() then return nil, "not in a raid" end
+	--> Both subgroup calls need lead or assist and, like every other failure mode
+	--> here, say nothing when they do not have it. Without this check the read-back
+	--> would report every player in the wrong group and give no reason why.
+	if not (UnitIsGroupLeader("player") or UnitIsGroupAssistant("player")) then
+		return nil, "you need raid lead or assist to move people"
+	end
 	if not plan or not plan.moves then return nil, "no plan to apply" end
 	if #plan.moves == 0 then return 0, 0 end
 

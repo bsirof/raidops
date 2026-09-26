@@ -499,6 +499,7 @@ function M.install()
       }
     end
     M.raid.inRaid = #M.raid.members > 0
+    if M.raid.lead == nil then M.raid.lead = true end
     M.raidCalls = {}
   end
 
@@ -515,6 +516,9 @@ function M.install()
   end
   M.subgroupCount = subgroupCount
 
+  M.raid.lead = true
+  G.UnitIsGroupLeader = function() return M.raid.lead end
+  G.UnitIsGroupAssistant = function() return M.raid.lead end
   G.IsInRaid = function() return M.raid.inRaid end
   G.IsInGroup = function() return M.raid.inRaid end
   G.GetNumGroupMembers = function() return #M.raid.members end

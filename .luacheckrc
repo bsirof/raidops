@@ -38,6 +38,7 @@ read_globals = {
 	-- units and the group
 	"UnitName", "UnitClass", "UnitGUID", "UnitExists", "UnitIsUnit",
 	"UnitGroupRolesAssigned", "UnitAffectingCombat", "InCombatLockdown",
+	"UnitIsGroupLeader", "UnitIsGroupAssistant",
 	"IsInRaid", "IsInGroup", "IsInInstance", "IsInGuild",
 	"GetNumGroupMembers", "GetNumSubgroupMembers", "GetRaidRosterInfo",
 	"SetRaidSubgroup", "SwapRaidSubgroup",
