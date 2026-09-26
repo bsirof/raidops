@@ -3,8 +3,8 @@
 A small, dark, raid-leading addon for World of Warcraft: invites, raid group layouts,
 and attendance. Nothing else.
 
-**Status: scaffold.** The architecture is settled and it loads clean. No feature is
-implemented yet.
+**Status: early.** Raid splitting works end to end. Invites and attendance are still
+stubs.
 
 Written from scratch, because the author wanted something small enough to actually
 understand. MIT licensed; do what you like with it.
@@ -45,6 +45,10 @@ a widget when it is needed twice.
 | `/roa` | open the options window |
 | `/roa help` | list commands |
 | `/roa debug` | toggle debug output |
+| `/roa perf` | what the damage meter is reporting |
+| `/roa perf store` | recorded averages per player |
+| `/roa split [2-4]` | preview a balanced split; nothing moves |
+| `/roa split apply` | run the preview against the live raid |
 
 ## Testing without the game
 
@@ -54,6 +58,7 @@ executes every file in load order with the varargs the game passes, then fires
 
 ```bash
 lua5.1 tools/loadtest.lua .
+lua5.1 tools/splittest.lua .
 ```
 
 Two things make the stub useful rather than a rubber stamp, both learned the hard way:

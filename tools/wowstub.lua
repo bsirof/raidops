@@ -478,6 +478,122 @@ function M.install()
   G.Lerp = function(a, b, t) return a + (b - a) * t end
   G.TableIsEmpty = function(t) return next(t) == nil end
 
+
+  --[[
+    A controllable raid.
+
+    M.setRaid replaces the roster; the raid API below reads from it. SetRaidSubgroup
+    and SwapRaidSubgroup reproduce the behaviour that makes applying a layout hard:
+    the real calls FAIL SILENTLY when the destination subgroup already holds five
+    players. A stub that simply moves people would let a broken move ordering pass.
+  ]]
+  M.raid = { members = {}, inRaid = false }
+  M.raidCalls = {}
+
+  function M.setRaid(list)
+    M.raid.members = {}
+    for i, m in ipairs(list or {}) do
+      M.raid.members[i] = {
+        name = m.name, subgroup = m.subgroup or 1,
+        role = m.role or "NONE", class = m.class or "MONK",
+      }
+    end
+    M.raid.inRaid = #M.raid.members > 0
+    M.raidCalls = {}
+  end
+
+  function M.raidLayout()
+    local out = {}
+    for _, m in ipairs(M.raid.members) do out[m.name] = m.subgroup end
+    return out
+  end
+
+  local function subgroupCount(g)
+    local n = 0
+    for _, m in ipairs(M.raid.members) do if m.subgroup == g then n = n + 1 end end
+    return n
+  end
+  M.subgroupCount = subgroupCount
+
+  G.IsInRaid = function() return M.raid.inRaid end
+  G.IsInGroup = function() return M.raid.inRaid end
+  G.GetNumGroupMembers = function() return #M.raid.members end
+  G.GetRaidRosterInfo = function(i)
+    local m = M.raid.members[i]
+    if not m then return nil end
+    -- name, rank, subgroup, level, class, fileName, zone, online, isDead, role, isML, combatRole
+    return m.name, 0, m.subgroup, 80, "Monk", m.class, "Zone", true, false, nil, false, m.role
+  end
+  G.UnitGroupRolesAssigned = function(name)
+    for _, m in ipairs(M.raid.members) do if m.name == name then return m.role end end
+    return "NONE"
+  end
+  G.SetRaidSubgroup = function(index, group)
+    M.raidCalls[#M.raidCalls + 1] = { kind = "set", index = index, group = group }
+    local m = M.raid.members[index]
+    if not m then return end
+    if m.subgroup == group then return end
+    if subgroupCount(group) >= 5 then return end   -- the silent failure
+    m.subgroup = group
+  end
+  G.SwapRaidSubgroup = function(a, b)
+    M.raidCalls[#M.raidCalls + 1] = { kind = "swap", a = a, b = b }
+    local ma, mb = M.raid.members[a], M.raid.members[b]
+    if not ma or not mb then return end
+    ma.subgroup, mb.subgroup = mb.subgroup, ma.subgroup
+  end
+
+  --[[
+    Blizzard's damage meter. Empty by default; M.setMeter installs sessions.
+
+    Enum.DamageMeterType is spelled out rather than stubbed so that a typo in a metric
+    name reads as nil here exactly as it would in game, instead of resolving to a
+    universal stub and quietly returning data.
+  ]]
+  G.Enum = G.Enum or {}
+  G.Enum.DamageMeterType = {
+    Dps = 1, Hps = 2, DamageDone = 3, HealingDone = 4, Absorbs = 5,
+    Interrupts = 6, Dispels = 7, DamageTaken = 8, AvoidableDamageTaken = 9,
+    Deaths = 10, EnemyDamageTaken = 11,
+  }
+
+  M.meter = { sessions = {}, data = {}, available = true }
+
+  --- sessions: { { id, duration, name, dps = { {name, class, rate} }, hps = { ... } } }
+  function M.setMeter(sessions, available)
+    M.meter.sessions, M.meter.data = {}, {}
+    M.meter.available = available ~= false
+    for _, s in ipairs(sessions or {}) do
+      M.meter.sessions[#M.meter.sessions + 1] =
+        { sessionID = s.id, durationSeconds = s.duration, name = s.name }
+      local function sources(list)
+        local out = {}
+        for _, src in ipairs(list or {}) do
+          out[#out + 1] = {
+            name = src.name, classFilename = src.class, sourceGUID = "G-" .. tostring(src.name),
+            amountPerSecond = src.rate,
+            totalAmount = src.total or (src.rate and src.rate * (s.duration or 1)),
+          }
+        end
+        return out
+      end
+      M.meter.data[s.id] = {
+        [1] = { durationSeconds = s.duration, combatSources = sources(s.dps) },
+        [2] = { durationSeconds = s.duration, combatSources = sources(s.hps) },
+      }
+    end
+  end
+
+  G.C_DamageMeter = {
+    IsDamageMeterAvailable = function() return M.meter.available end,
+    GetAvailableCombatSessions = function() return M.meter.sessions end,
+    GetCombatSessionFromID = function(id, mt)
+      local d = M.meter.data[id]
+      return d and d[mt] or nil
+    end,
+    ResetAllCombatSessions = function() M.setMeter({}) end,
+  }
+
   G.C_Timer = {
     After = function(delay, fn) return schedule(delay, fn, false) end,
     NewTimer = function(delay, fn) return schedule(delay, fn, true) end,

@@ -1,7 +1,7 @@
 # RaidOps Alpha - design notes
 
-Status: **scaffold only.** Nothing is implemented. This exists so that tinkering starts
-at feature work instead of plumbing.
+Status: **one feature built.** Raid splitting balanced on recorded throughput works
+end to end; invites and attendance are still stubs.
 
 ## What this is
 
@@ -124,6 +124,8 @@ Not everything newer is better, and none of this is a licence to chase APIs.
 | `Core.lua` | saved variables and defaults, module registry, event dispatch, slash commands |
 | `UI.lua` | a small dark widget layer: panel, button, check, edit, list |
 | `Config.lua` | one window, a tab per module, panes built lazily on first open |
+| `Modules/Perf.lua` | per-player DPS and HPS from `C_DamageMeter`, averaged across the night |
+| `Modules/Groups.lua` | balancing a split, and the move ordering that applies it |
 | `Modules/*.lua` | one file per feature, each self-contained |
 
 A module declares handlers rather than managing frames:
@@ -167,18 +169,33 @@ These cost real debugging on the stable build. Do not rediscover them.
 
 Roughly in order of difficulty:
 
-1. **Applying a raid group layout.** `SetRaidSubgroup` and `SwapRaidSubgroup` fail
-   silently when the destination subgroup is full, so this is a move-ordering problem,
-   not a loop. Worth designing on paper first.
+1. ~~**Applying a raid group layout.**~~ Done, in `Groups.PlanMoves`. Both subgroup
+   calls fail silently when the destination holds five, so the solver moves people
+   into space where there is space and swaps where there is not. The termination
+   argument is in the comment above the function, and the stub reproduces the silent
+   failure so a bad ordering fails the tests rather than the raid.
 2. **Invite throttling.** Blizzard rate-limits invites; batch across frames.
 3. **Attendance storage.** Decide the retention policy before writing records, or the
    saved-variable file grows without bound.
-4. Everything else is straightforward.
+4. **Saved group layouts.** `Groups` can compute and apply a split but cannot yet save
+   a named layout, load one, or import and export as text.
+5. Everything else is straightforward.
 
 ## Testing
 
 ```
 lua5.1 tools/loadtest.lua .                 # headless load and init, any real 5.1
-../raidops-build.sh check-alpha             # same, through the build script
+lua5.1 tools/splittest.lua .                # Perf and Groups behaviour
+../raidops-build.sh check-alpha             # both, through the build script
 ../raidops-build.sh deploy-alpha            # copy to AddOns/RaidOps_Alpha
 ```
+
+`tools/harness.lua` loads the addon and hands back its namespace, so a behavioural
+test can reach inside without duplicating the loader.
+
+`tools/splittest.lua` is where constraint 4 is taken seriously. Its stub reproduces the
+things that make this code hard rather than papering over them: `SetRaidSubgroup`
+refuses a full subgroup without complaining, and `C_DamageMeter` returns pets and
+sources with no per-second figure. Every check in it has been run against a
+deliberately broken implementation and confirmed to fail. Ten faults were injected
+while it was written; each one was caught.

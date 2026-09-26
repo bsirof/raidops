@@ -10,5 +10,6 @@ Core.lua
 UI.lua
 Config.lua
 Modules\Invites.lua
+Modules\Perf.lua
 Modules\Groups.lua
 Modules\Attendance.lua
